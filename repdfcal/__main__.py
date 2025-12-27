@@ -99,7 +99,7 @@ def initialize_document(year: int) -> FPDF:
     return doc
 
 
-def insert_calendar(
+def insert_month_overview(
     doc: FPDF,
     year: int,
     mon: int,
@@ -115,6 +115,11 @@ def insert_calendar(
     display_year=True,
     ysize=None,
 ):
+    """An overview on the given month.
+
+    This function doesn't insert a new page. A month overview can be
+    displayed on its own page or not (like in the year page or day
+    pages)."""
     if not ysize:
         ysize = size
     if not day_font:
@@ -226,6 +231,10 @@ def add_day_page(
     time_block_line_width: int,
     time_block_line_color: int,
 ):
+    """A full-page view on the given day.
+
+    It contains an overview for the corresponding month, see
+    ``insert_month_overview()``."""
     try:
         date = datetime.date(year, mon, day)
     except Exception:
@@ -242,7 +251,7 @@ def add_day_page(
     cal_y = 50
     cal_x = PAGE_WIDTH - cal_w - 4
 
-    insert_calendar(
+    insert_month_overview(
         doc,
         year,
         mon,
@@ -353,13 +362,20 @@ def generate_links(doc: FPDF) -> Dict[str, int]:
     return links_mapping
 
 
-def add_months_page(
-    doc: FPDF, links: Dict[str, int], events: Dict[str, Dict[str, List[DailyEvent]]]
+def add_year_page(
+    doc: FPDF,
+    year: int,
+    links: Dict[str, int],
+    events: Dict[str, Dict[str, List[DailyEvent]]],
 ):
+    """A full-page view on given year.
+
+    The page contains 12 month overviews, see
+    ``insert_month_overview()``."""
     for mon in range(0, 12):
         xsize = 9 * 7
         ysize = 9 * 7
-        insert_calendar(
+        insert_month_overview(
             doc,
             year,
             mon + 1,
@@ -442,7 +458,7 @@ if __name__ == "__main__":
             bank_zone=args["bank_holidays"],
         )
 
-    add_months_page(doc, links_mapping, events)
+    add_year_page(doc, year, links_mapping, events)
 
     time_block_line_width = args["linewidth"]
     time_block_line_color = args["linecolor"]
@@ -452,7 +468,7 @@ if __name__ == "__main__":
         doc.add_page()
         doc.set_link(links_mapping["%04d-%02d" % (year, mon)])
 
-        insert_calendar(
+        insert_month_overview(
             doc,
             year,
             mon,
