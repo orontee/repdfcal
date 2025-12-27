@@ -17,7 +17,9 @@ Initialize build env and generate:
 $ python -m venv env
 $ source env/bin/activate
 (env)$ python -m pip install -r requirements.txt
-(env)$ ./make-calendar
+(env)$ python -m repdfcal --year 2026
+Generation of calendar for 2026
+Writing agenda-2026.pdf
 ```
 
 To include French school and bank holidays, set current locale to
@@ -25,5 +27,8 @@ To include French school and bank holidays, set current locale to
 and/or a bank holiday zone (`--bank-holidays`):
 
 ``` shell
-(env)$ python -m repdfcal --school-zone C --bank-holidays Métropole
+(env)$ python -m repdfcal --year 2026 --school-zone C --bank-holidays Métropole
+Generation of calendar for 2026
+Collecting French holidays
+Writing agenda-2026.pdf
 ```
