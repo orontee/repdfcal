@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=61.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "repdfcal"
+version = "0.1.0"
+description = "Page-per-day calendar, generated for reMarkable tablet."
+readme = "README.md"
+requires-python = ">=3.8"
+authors = [
+    { name = "Matthias Meulien", email = "orontee@gmail.com" }
+]
+license = { text = "MIT" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "fpdf2>=2.5",
+    "jours-feries-france",
+    "vacances-scolaires-france",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "mypy>=1.0.0",
+    "pylsp-mypy>=0.7.0",
+    "python-lsp-black>=2.0.0",
+    "python-lsp-isort>=0.2.1",
+    "python-lsp-server>=1.14.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/orontee/repdfcal"
+Repository = "https://github.com/orontee/repdfcal"
