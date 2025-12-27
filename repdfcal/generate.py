@@ -7,6 +7,7 @@ import datetime
 from .events import DailyEvent
 from .holidays import collect_french_holidays
 
+import fpdf
 from fpdf import FPDF
 
 LOGGER = logging.getLogger(__name__)
@@ -18,18 +19,18 @@ PAGE_WIDTH = 210
 PAGE_HEIGTH = 280
 
 # clear the remarkable tool bar
-LEFT_MARGIN = 20
+LEFT_MARGIN = 10
 RIGHT_MARGIN = 20
 TOP_MARGIN = 20
 BOTTOM_MARGIN = 20
 
 MONTH_COLOR: list[tuple[int, int, int]] = [
     (-1, -1, -1),  # month 0
-    (211, 211, 211),
+    (180, 180, 180),
     (128, 0, 128),
     (0, 128, 0),
     (155, 255, 100),
-    (255, 192, 203),
+    (250, 128, 114),
     (0, 0, 255),
     (255, 0, 0),
     (255, 215, 0),
@@ -38,6 +39,8 @@ MONTH_COLOR: list[tuple[int, int, int]] = [
     (0, 0, 0),
     (178, 34, 34),
 ]
+
+HOLYDAY_COLOR = (180, 180, 180)
 
 locale.setlocale(locale.LC_ALL, "")
 # propagate OS locale
@@ -132,6 +135,7 @@ def __insert_month_overview(
     events: dict[str, dict[str, list[DailyEvent]]],
     *,
     highlighted_day: int | None,
+    highlighted_holidays: bool,
     size: int,
     x: int,
     y: int,
@@ -171,7 +175,7 @@ def __insert_month_overview(
     y += int(size * 1.5)
 
     # draw the days of the week above the table
-    doc.set_fill_color(180)
+    doc.set_fill_color(255)
     doc.set_text_color(0)
     doc.set_font(FONT, "", size)
     for weekday in range(0, 7):
@@ -206,26 +210,37 @@ def __insert_month_overview(
         day_x = x + weekday * size
         day_y = y + week * ysize
 
+        day_events: dict[str, list[DailyEvent]] = events.get(ymd, {})
+
         if border:
             doc.rect(day_x, day_y, size, ysize)
-        if day == highlighted_day:
-            doc.rect(day_x, day_y, size, ysize, style="F")
+
+        is_weekend: bool = (weekday in (5, 6))
+        is_holiday: bool = False
+        if not is_weekend:
+            for _, evs in day_events.items():
+                if any([ev.is_holiday() for ev in evs]):
+                    is_holiday = True
+                    break
+
+        if is_weekend or is_holiday:
+            doc.set_text_color(0)
+            doc.set_fill_color(*HOLYDAY_COLOR)
+            doc.rect(day_x, day_y, size, ysize, style=fpdf.enums.RenderStyle.F)
 
         doc.set_xy(day_x, day_y)
-        doc.set_font(FONT, "", day_font)
+        doc.set_font(FONT, "B" if day  == highlighted_day else "", day_font)
         doc.cell(
             w=size,
             h=day_font / 2 + 1.5,
             text="%d" % (day),
             align="R",
             link=link,
-            # fill = day == highlight,
-            # border = border,
         )
 
         if not border:
             continue
-        if not (day_events := events.get(ymd)):
+        if not day_events:
             continue
 
         doc.set_font(FONT, "", day_font * 0.8)
@@ -283,6 +298,7 @@ def __add_day_page(
         links,
         events,
         highlighted_day=day,
+        highlighted_holidays=True,
         size=cal_size,
         x=cal_x,
         y=cal_y,
@@ -376,6 +392,7 @@ def add_year_page(
             links,
             events,
             highlighted_day=None,
+            highlighted_holidays=True,
             size=8,
             x=(mon % 3) * xsize + LEFT_MARGIN,
             y=(mon // 3) * ysize + 20,
@@ -409,6 +426,7 @@ def add_months_pages(
             links,
             events,
             highlighted_day=None,
+            highlighted_holidays=True,
             size=(PAGE_WIDTH - LEFT_MARGIN) // 7,
             x=LEFT_MARGIN,
             y=0,
