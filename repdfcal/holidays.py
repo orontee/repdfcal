@@ -1,8 +1,6 @@
 import datetime
 from collections import defaultdict
 
-from typing import DefaultDict, List, Optional
-
 from .events import DailyEvent
 
 from jours_feries_france import JoursFeries
@@ -11,16 +9,16 @@ from vacances_scolaires_france import SchoolHolidayDates
 
 def collect_french_holidays(
     year: int,
-    events: DefaultDict[str, DefaultDict[str, List[DailyEvent]]],
-    school_zone: Optional[str],
-    bank_zone: Optional[str],
+    events: defaultdict[str, defaultdict[str, list[DailyEvent]]],
+    school_zone: str | None,
+    bank_zone: str | None,
 ):
     school_holidays = (
         SchoolHolidayDates().holidays_for_year_and_zone(year, school_zone)
         if school_zone
         else None
     )
-    bank_holidays: Optional[DefaultDict[datetime.date, List[str]]] = (
+    bank_holidays: defaultdict[datetime.date, list[str]] | None = (
         defaultdict(list) if bank_zone else None
     )
     if bank_holidays is not None:
